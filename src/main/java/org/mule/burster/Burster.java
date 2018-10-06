@@ -1,14 +1,38 @@
 package org.mule.burster;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
-public class Burster {
+public class Burster<OUT> {
 
-    ExecutorService executorService = Executors.newFixedThreadPool(1);
+	private final static ExecutorService executorService = Executors.newFixedThreadPool(20);
 
-    public <T> Future<T> append(Ticket<T> ticket) {
-        return executorService.submit(ticket::burn);
-    }
+	private CompletableFuture<OUT> future;
+
+	private Burster(Supplier<OUT> rRunnable) {
+		future = executeNow(rRunnable);
+	}
+
+	private static <R> CompletableFuture<R> executeNow(Supplier<R> rRunnable) {
+		System.out.println("Executing " + rRunnable);
+		if (executorService.isShutdown())
+			throw new RuntimeException("Executor service is shutdown");
+		return CompletableFuture.supplyAsync(rRunnable, executorService);
+	}
+
+	public static <R> Burster<R> execute(Supplier<R> rRunnable) {
+		return new Burster<>(rRunnable);
+	}
+
+	public OUT get() throws ExecutionException, InterruptedException {
+		return future.get();
+	}
+	//TODO: allow to chain execution
+//	public <T> Burster<T> execute(Function<OUT, T> function) {
+//		return new Burster<>(() -> waitingService.submit(() -> function.apply(get())).get());
+//	}
+
 }

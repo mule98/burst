@@ -1,3 +1,4 @@
+/*
 package org.mule.burster;
 
 import java.util.function.Function;
@@ -24,3 +25,4 @@ public class Ticket<T, Z> {
         return new Ticket<Z, W>(this, ticket);
     }
 }
+*/
