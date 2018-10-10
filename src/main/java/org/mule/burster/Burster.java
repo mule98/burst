@@ -37,9 +37,5 @@ public class Burster<OUT> implements IBurster<OUT> {
 	public <R> IBurster<R> map(Function<OUT, R> function) {
 		return new MappingBurster<>(this, function);
 	}
-	//TODO: allow to chain execution
-//	public <T> Burster<T> execute(Function<OUT, T> function) {
-//		return new Burster<>(() -> waitingService.submit(() -> function.apply(get())).get());
-//	}
 
 }
