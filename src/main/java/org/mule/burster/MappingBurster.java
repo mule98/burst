@@ -7,8 +7,8 @@ public class MappingBurster<F, R> implements IBurster<R> {
 
 	private final Burster<R> burster;
 
-	MappingBurster(Burster<F> outBurster, Function<F, R> function) {
-		burster = Burster.execute(() -> {
+	MappingBurster(IBurster<F> outBurster, Function<F, R> function) {
+		burster = new Burster<>(() -> {
 			try {
 				return function.apply(outBurster.get());
 			} catch (ExecutionException | InterruptedException e) {

@@ -13,20 +13,20 @@ public class Burster<OUT> implements IBurster<OUT> {
 
 	private CompletableFuture<OUT> future;
 
-	private Burster(Supplier<OUT> rRunnable) {
+	Burster(Supplier<OUT> rRunnable) {
 		future = executeNow(rRunnable);
 	}
 
-	private static <R> CompletableFuture<R> executeNow(Supplier<R> rRunnable) {
+	static private <R> CompletableFuture<R> executeNow(Supplier<R> rRunnable) {
 		System.out.println("Executing " + rRunnable);
-		if (executorService.isShutdown())
+		if (Burster.executorService.isShutdown())
 			throw new RuntimeException("Executor service is shutdown");
-		return CompletableFuture.supplyAsync(rRunnable, executorService);
+		final CompletableFuture<R> rCompletableFuture =
+				CompletableFuture.supplyAsync(rRunnable, Burster.executorService);
+		BursterLogger.append(rCompletableFuture);
+		return rCompletableFuture;
 	}
 
-	public static <R> Burster<R> execute(Supplier<R> rRunnable) {
-		return new Burster<>(rRunnable);
-	}
 
 	@Override
 	public OUT get() throws ExecutionException, InterruptedException {

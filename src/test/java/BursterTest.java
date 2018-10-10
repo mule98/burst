@@ -1,10 +1,13 @@
 import org.junit.jupiter.api.Test;
 import org.mule.burster.Burster;
+import org.mule.burster.BursterLogger;
+import org.mule.burster.IBurster;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,14 +17,14 @@ class BursterTest {
 
 	@Test
 	void createBurster() {
-		Burster.execute(() -> null);
+		IBurster.execute(() -> null);
 	}
 
 	@Test
 	void burstOneJob() throws InterruptedException, ExecutionException {
 
 		String expected = "Toto";
-		final String s = Burster.execute(() -> expected).get();
+		final String s = IBurster.execute(() -> expected).get();
 
 
 		assertEquals(expected, s);
@@ -32,7 +35,7 @@ class BursterTest {
 	void burstFeedDatas() throws InterruptedException, ExecutionException {
 
 		String expected = "Toto";
-		final String s = Burster.execute(() -> expected).get();
+		final String s = IBurster.execute(() -> expected).get();
 
 
 		assertEquals(expected, s);
@@ -45,17 +48,9 @@ class BursterTest {
 
 		List<Burster> bursters = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {
-			bursters.add(Burster.execute(() -> {
-				try {
-					final UUID uuid = UUID.randomUUID();
-					System.out.println(Thread.currentThread().getName() + " executing " + uuid);
-					//noinspection SynchronizationOnLocalVariableOrMethodParameter
-					synchronized (uuid) {Thread.sleep(1000);}
-					System.out.println(Thread.currentThread().getName() + " finished " + uuid);
-					return expected;
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
+			bursters.add(IBurster.execute(() -> {
+				wait1Sec();
+				return expected;
 			}));
 		}
 		bursters.forEach(t -> {
@@ -67,16 +62,50 @@ class BursterTest {
 		});
 	}
 
+	private void wait1Sec() {
+		try {
+			final UUID uuid = UUID.randomUUID();
+			System.out.println(Thread.currentThread().getName() + " executing " + uuid);
+			//noinspection SynchronizationOnLocalVariableOrMethodParameter
+			synchronized (uuid) {Thread.sleep(1000);}
+			System.out.println(Thread.currentThread().getName() + " finished " + uuid);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Test
 	void recursiveBurst() throws ExecutionException, InterruptedException {
 
 		String expected = "recursiveResult";
 
 
-		final String s = Burster.execute(() -> 1L).map(Function.identity()).map((t) -> t + expected).get();
+		final String s = IBurster.execute(() -> 1L).map(Function.identity()).map((t) -> t + expected).get();
 
 		assertEquals("1recursiveResult", s);
 
 	}
-	//TODO: log statuses
+
+	@Test
+	void logBurstStatusses() throws InterruptedException {
+
+		String expected = "recursiveResult";
+		Semaphore semaphore = new Semaphore(1);
+		semaphore.acquire();
+
+
+		IBurster.run(() -> {
+			try {
+				semaphore.acquire();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		});
+
+		assertEquals(1, BursterLogger.getRunningSize());
+		semaphore.release();
+		wait1Sec();
+		assertEquals(0, BursterLogger.getRunningSize());
+
+	}
 }
