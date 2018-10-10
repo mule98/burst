@@ -4,9 +4,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class Burster<OUT> {
+public class Burster<OUT> implements IBurster<OUT> {
 
 	private final static ExecutorService executorService = Executors.newFixedThreadPool(20);
 
@@ -27,8 +28,14 @@ public class Burster<OUT> {
 		return new Burster<>(rRunnable);
 	}
 
+	@Override
 	public OUT get() throws ExecutionException, InterruptedException {
 		return future.get();
+	}
+
+	@Override
+	public <R> IBurster<R> map(Function<OUT, R> function) {
+		return new MappingBurster<>(this, function);
 	}
 	//TODO: allow to chain execution
 //	public <T> Burster<T> execute(Function<OUT, T> function) {

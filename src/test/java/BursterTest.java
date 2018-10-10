@@ -5,19 +5,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class BursterTest {
+class BursterTest {
 
 	@Test
 	void createBurster() {
-		Burster burster = Burster.execute(() -> null);
+		Burster.execute(() -> null);
 	}
 
 	@Test
 	void burstOneJob() throws InterruptedException, ExecutionException {
+
+		String expected = "Toto";
+		final String s = Burster.execute(() -> expected).get();
+
+
+		assertEquals(expected, s);
+	}
+
+
+	@Test
+	void burstFeedDatas() throws InterruptedException, ExecutionException {
 
 		String expected = "Toto";
 		final String s = Burster.execute(() -> expected).get();
@@ -37,6 +49,7 @@ public class BursterTest {
 				try {
 					final UUID uuid = UUID.randomUUID();
 					System.out.println(Thread.currentThread().getName() + " executing " + uuid);
+					//noinspection SynchronizationOnLocalVariableOrMethodParameter
 					synchronized (uuid) {Thread.sleep(1000);}
 					System.out.println(Thread.currentThread().getName() + " finished " + uuid);
 					return expected;
@@ -54,16 +67,16 @@ public class BursterTest {
 		});
 	}
 
-//	@Test
-//	void recursiveBurst() throws ExecutionException, InterruptedException {
-//
-//		String expected = "recursiveResult";
-//
-//
-//		final String s = new Burster<>(() -> 1L).execute(Function.identity()).execute((t) -> t + expected).get();
-//
-//		assertEquals("1recursiveResult", s);
-//
-//	}
+	@Test
+	void recursiveBurst() throws ExecutionException, InterruptedException {
+
+		String expected = "recursiveResult";
+
+
+		final String s = Burster.execute(() -> 1L).map(Function.identity()).map((t) -> t + expected).get();
+
+		assertEquals("1recursiveResult", s);
+
+	}
 	//TODO: log statuses
 }
