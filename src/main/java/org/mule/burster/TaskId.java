@@ -15,11 +15,16 @@ public class TaskId {
 		return new TaskId(UUID.randomUUID());
 	}
 
-	public static TaskId of(String uuid) {
-		return new TaskId(UUID.fromString(uuid));
+	public static TaskId of(UUID uuid) {
+		return new TaskId(uuid);
 	}
 
 	public String value() {
 		return uuid.toString();
 	}
+
+    @Override
+    public String toString() {
+        return value();
+    }
 }

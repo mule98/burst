@@ -94,19 +94,18 @@ class BursterTest {
 		semaphore.acquire();
 
 
-		final BursterConsole bursterConsole = new BursterConsole();
-		IBurster.run(() -> {
-			try {
-				semaphore.acquire();
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		});
+        Burster burster = IBurster.run(() -> {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
-		assertEquals(1, bursterConsole.getRunningSize());
+        assertEquals(1, burster.console().getRunningSize());
 		semaphore.release();
 		wait1Sec();
-		assertEquals(0, bursterConsole.getRunningSize());
+		assertEquals(0, burster.console().getRunningSize());
 
 	}
 }

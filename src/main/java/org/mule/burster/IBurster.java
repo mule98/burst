@@ -11,8 +11,8 @@ public interface IBurster<OUT> {
 		return new Burster<>(rRunnable);
 	}
 
-	static void run(Runnable rRunnable) {
-		new Burster<>(() -> {
+	static Burster run(Runnable rRunnable) {
+		return new Burster<>(() -> {
 			rRunnable.run();
 			return null;
 		});
