@@ -1,5 +1,7 @@
 package org.mule.burster;
 
+import org.mule.burster.audit.BurstListener;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,14 +11,10 @@ public class BursterExecutor {
 
     final ExecutorService executorService = Executors.newFixedThreadPool(20);
 
-    public BursterExecutor() {
-    }
-
-    <R> Capsule<R> executeNow(Supplier<R> rRunnable) {
+	<R> Capsule<R> executeNow(Supplier<R> rRunnable, BurstListener console) {
         System.out.println("Executing " + rRunnable);
         if (executorService.isShutdown()) throw new RuntimeException("Executor service is shutdown");
-        final CompletableFuture<R> rCompletableFuture = CompletableFuture.supplyAsync(rRunnable, executorService);
-        return new Capsule<>(rCompletableFuture);
+		return new Capsule<>(() -> CompletableFuture.supplyAsync(rRunnable, executorService), console);
     }
 
 

@@ -5,7 +5,7 @@ import org.mule.burster.TaskId;
 
 public interface BurstListener {
 
-	void taskAppened(TaskDescription description);
+	void taskAppended(TaskDescription description);
 
 	void taskFinished(TaskId id);
 

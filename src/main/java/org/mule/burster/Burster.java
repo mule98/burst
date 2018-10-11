@@ -2,23 +2,23 @@ package org.mule.burster;
 
 import org.mule.burster.audit.BursterConsole;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Burster<OUT> implements IBurster<OUT> {
 
-    private final BursterExecutor bursterExecutor = new BursterExecutor();
+	private final BursterConsole console = new BursterConsole();
+	private final BursterExecutor bursterExecutor = new BursterExecutor();
 
-    private Capsule<OUT> future;
+	private Capsule<OUT> future;
 
 	Burster(Supplier<OUT> rRunnable) {
-		future = bursterExecutor.executeNow(rRunnable);
+		future = bursterExecutor.executeNow(rRunnable, console);
 	}
 
 
-    @Override
+	@Override
 	public OUT get() throws ExecutionException, InterruptedException {
 		return future.get();
 	}
@@ -28,7 +28,7 @@ public class Burster<OUT> implements IBurster<OUT> {
 		return new MappingBurster<>(this, function);
 	}
 
-    public BursterConsole console() {
-        return new BursterConsole();
-    }
+	public BursterConsole console() {
+		return console;
+	}
 }

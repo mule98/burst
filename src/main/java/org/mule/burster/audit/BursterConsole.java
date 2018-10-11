@@ -3,33 +3,55 @@ package org.mule.burster.audit;
 import org.mule.burster.TaskDescription;
 import org.mule.burster.TaskId;
 
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
+import java.util.HashMap;
+import java.util.logging.Logger;
 
 public class BursterConsole implements BurstListener {
 
-	private ArrayList<CompletableFuture> completableFutures = new ArrayList<>();
+	Logger logger = Logger.getLogger(BursterConsole.class.getCanonicalName());
 
-	public long getRunningSize() {
-		return completableFutures.stream().filter(t -> !t.isDone()).count();
-	}
+	private HashMap<TaskId, TaskDescription> queued = new HashMap();
+	private HashMap<TaskId, TaskDescription> running = new HashMap();
+	private HashMap<TaskId, TaskDescription> finished = new HashMap();
 
-	public void append(CompletableFuture<?> rCompletableFuture) {
-		completableFutures.add(rCompletableFuture);
+	public int getRunningSize() {
+		return running.values().size();
 	}
 
 	@Override
-	public void taskAppened(TaskDescription description) {
-
+	public void taskAppended(TaskDescription description) {
+		System.out.println("Queued " + description.taskId());
+		queued.put(description.taskId(), description);
 	}
 
 	@Override
 	public void taskFinished(TaskId id) {
-
+		System.out.println("Finished " + id);
+		TaskDescription element = running.remove(id);
+		if (element == null) {
+			element = queued.remove(id);
+		}
+		if (element == null) {
+			throw new RuntimeException("No started element found:" + id);
+		}
+		finished.put(id, element);
 	}
 
 	@Override
 	public void taskStarted(TaskId id) {
+		System.out.println("Started " + id);
+		TaskDescription element = queued.remove(id);
+		if (element == null) {
+			throw new RuntimeException("No started element found:" + id);
+		}
+		running.put(id, element);
+	}
 
+	public int getQueuedSize() {
+		return queued.size();
+	}
+
+	public int getFinishedSize() {
+		return finished.size();
 	}
 }
