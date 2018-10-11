@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 public class Burster<OUT> implements IBurster<OUT> {
 
-	private final static ExecutorService executorService = Executors.newFixedThreadPool(20);
+	private final ExecutorService executorService = Executors.newFixedThreadPool(20);
 
 	private CompletableFuture<OUT> future;
 
@@ -17,13 +17,13 @@ public class Burster<OUT> implements IBurster<OUT> {
 		future = executeNow(rRunnable);
 	}
 
-	static private <R> CompletableFuture<R> executeNow(Supplier<R> rRunnable) {
+	private <R> CompletableFuture<R> executeNow(Supplier<R> rRunnable) {
 		System.out.println("Executing " + rRunnable);
-		if (Burster.executorService.isShutdown())
+		if (executorService.isShutdown())
 			throw new RuntimeException("Executor service is shutdown");
 		final CompletableFuture<R> rCompletableFuture =
-				CompletableFuture.supplyAsync(rRunnable, Burster.executorService);
-		BursterLogger.append(rCompletableFuture);
+				CompletableFuture.supplyAsync(rRunnable, executorService);
+//		BursterConsole.append(rCompletableFuture);
 		return rCompletableFuture;
 	}
 

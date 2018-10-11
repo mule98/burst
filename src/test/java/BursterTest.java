@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test;
 import org.mule.burster.Burster;
-import org.mule.burster.BursterLogger;
 import org.mule.burster.IBurster;
+import org.mule.burster.audit.BursterConsole;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +94,7 @@ class BursterTest {
 		semaphore.acquire();
 
 
+		final BursterConsole bursterConsole = new BursterConsole();
 		IBurster.run(() -> {
 			try {
 				semaphore.acquire();
@@ -102,10 +103,10 @@ class BursterTest {
 			}
 		});
 
-		assertEquals(1, BursterLogger.getRunningSize());
+		assertEquals(1, bursterConsole.getRunningSize());
 		semaphore.release();
 		wait1Sec();
-		assertEquals(0, BursterLogger.getRunningSize());
+		assertEquals(0, bursterConsole.getRunningSize());
 
 	}
 }
