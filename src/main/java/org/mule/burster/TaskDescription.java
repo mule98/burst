@@ -8,4 +8,9 @@ public class TaskDescription {
 	public TaskId taskId() {
 		return taskId;
 	}
+
+    @Override
+    public String toString() {
+        return "TaskDescription{" + "taskId=" + taskId + '}';
+    }
 }

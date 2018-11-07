@@ -10,9 +10,9 @@ public class BursterConsole implements BurstListener {
 
 	Logger logger = Logger.getLogger(BursterConsole.class.getCanonicalName());
 
-	private HashMap<TaskId, TaskDescription> queued = new HashMap();
-	private HashMap<TaskId, TaskDescription> running = new HashMap();
-	private HashMap<TaskId, TaskDescription> finished = new HashMap();
+	private HashMap<TaskId, TaskDescription> queued = new HashMap<>();
+	private HashMap<TaskId, TaskDescription> running = new HashMap<>();
+	private HashMap<TaskId, TaskDescription> finished = new HashMap<>();
 
 	public int getRunningSize() {
 		return running.values().size();
@@ -20,31 +20,31 @@ public class BursterConsole implements BurstListener {
 
 	@Override
 	public void taskAppended(TaskDescription description) {
-		System.out.println("Queued " + description.taskId());
+		System.out.println("Queued " + description);
 		queued.put(description.taskId(), description);
 	}
 
 	@Override
-	public void taskFinished(TaskId id) {
-		System.out.println("Finished " + id);
-		TaskDescription element = running.remove(id);
+	public void taskFinished(TaskDescription description) {
+		System.out.println("Finished " + description);
+		TaskDescription element = running.remove(description.taskId());
 		if (element == null) {
-			element = queued.remove(id);
+			element = queued.remove(description.taskId());
 		}
 		if (element == null) {
-			throw new RuntimeException("No started element found:" + id);
+			throw new RuntimeException("No started element found:" + description);
 		}
-		finished.put(id, element);
+		finished.put(description.taskId(), element);
 	}
 
 	@Override
-	public void taskStarted(TaskId id) {
-		System.out.println("Started " + id);
-		TaskDescription element = queued.remove(id);
+	public void taskStarted(TaskDescription description) {
+		System.out.println("Started " + description);
+		TaskDescription element = queued.remove(description.taskId());
 		if (element == null) {
-			throw new RuntimeException("No started element found:" + id);
+			throw new RuntimeException("No started element found:" + description);
 		}
-		running.put(id, element);
+		running.put(description.taskId(), element);
 	}
 
 	public int getQueuedSize() {
